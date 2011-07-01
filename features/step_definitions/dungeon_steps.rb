@@ -1,40 +1,3 @@
-class Dungeon
-  def initialize
-    @entrance = Room.new(self, "You are in the entrance")
-  end
-
-  def enter
-    @entrance 
-  end
-  
-  attr_reader :entrance
-  attr_accessor :treasure_chamber
-end
-
-
-class Room
-  def initialize(dungeon, description = "")
-    @dungeon = dungeon
-    @description = description
-  end
-  
-  attr_accessor :description
-  
-  
-  [:north, :south, :east, :west].each do |direction|
-    define_method "create_room_to_the_#{direction}" do
-      instance_variable_set "@#{direction}", Room.new(@dungeon)
-    end
-    
-    attr_reader direction
-  end
-  
-  def designate_as_treasure_chamber
-    @dungeon.treasure_chamber = self
-  end
-end
-
-
 Given /^there is an entrance described as$/ do |description|
   @dungeon = Dungeon.new
   @dungeon.entrance.description = description
@@ -46,12 +9,26 @@ Given /^a room to the east of the entrance described as$/ do |description|
   @previous_room.description = description
 end
 
+Given /^a room to the east of the entrance$/ do
+  @previous_room = @previous_room.create_room_to_the_east
+end
+
 Given /^a second room to the south of the first room$/ do
   @previous_room = @previous_room.create_room_to_the_south
 end
 
 Given /^a treasure chamber to the west of the second room$/ do
   @previous_room.create_room_to_the_west.designate_as_treasure_chamber
+end
+
+module Computer
+  def command_line
+    @command_line ||= CommandLine.new
+  end
+end
+
+Given /^I have a computer with a command line interface$/ do
+  extend Computer # extend the world with a computer
 end
 
 When /^I enter the dungeon$/ do
@@ -70,6 +47,10 @@ When /^I go west$/ do
   @current_room = @current_room.west
 end
 
+When /^I type the "([^"]*)" into the command line$/ do |command|
+  command_line.enter command
+end
+
 Then /^I should be in the treasure chamber$/ do
   @current_room.should == @dungeon.treasure_chamber 
 end
@@ -78,3 +59,6 @@ Then /^the description should be$/ do |description|
   @current_room.description.should == description
 end
 
+Then /^the output should be$/ do |output|
+  command_line.output.should == output
+end

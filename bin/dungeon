@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+require File.expand_path("../../lib/dungeon.rb", __FILE__)
+
+puts "You are in the entrance!"
+puts "There is a door to the east"
+print "What do you want to do?"
